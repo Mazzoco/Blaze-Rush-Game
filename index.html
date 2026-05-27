@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlazeDash - O Jogo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-wrapper">
+    <!-- MENU INICIAL -->
+    <div id="menu-screen" class="screen active">
+      <div class="menu-bg-anim"></div>
+      <div class="menu-content">
+        <div class="game-logo">
+          <span class="logo-blaze">BLAZE</span><span class="logo-dash">DASH</span>
+        </div>
+        <p class="menu-subtitle">A Aventura Mais Veloz do Mundo</p>
+        <div class="menu-buttons">
+          <button class="menu-btn primary" id="btn-start">▶ JOGAR</button>
+          <button class="menu-btn" id="btn-select">◆ SELECIONAR FASE</button>
+          <button class="menu-btn" id="btn-ranking">★ RANKING</button>
+        </div>
+        <div class="menu-controls">
+          <span>← → Mover</span>
+          <span>↑ / Z Pular</span>
+          <span>X / Shift Dash</span>
+          <span>↑↑ Double Jump</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SELEÇÃO DE FASE -->
+    <div id="select-screen" class="screen">
+      <div class="select-bg"></div>
+      <h2 class="select-title">SELECIONAR FASE</h2>
+      <div class="stage-grid">
+        <div class="stage-card" data-stage="0">
+          <div class="stage-icon">🌲</div>
+          <div class="stage-name">Fase 1</div>
+          <div class="stage-sub">Floresta Veloz</div>
+        </div>
+        <div class="stage-card locked" data-stage="1">
+          <div class="stage-icon">💎</div>
+          <div class="stage-name">Fase 2</div>
+          <div class="stage-sub">Caverna de Cristal</div>
+        </div>
+        <div class="stage-card locked" data-stage="2">
+          <div class="stage-icon">❄️</div>
+          <div class="stage-name">Fase 3</div>
+          <div class="stage-sub">Tundra Congelada</div>
+        </div>
+        <div class="stage-card locked" data-stage="3">
+          <div class="stage-icon">🔥</div>
+          <div class="stage-name">Fase 4</div>
+          <div class="stage-sub">Vulcão Infernal</div>
+        </div>
+      </div>
+      <button class="menu-btn" id="btn-back-menu">← VOLTAR</button>
+    </div>
+
+    <!-- RANKING -->
+    <div id="ranking-screen" class="screen">
+      <h2 class="select-title">★ RANKING</h2>
+      <div id="ranking-list" class="ranking-list"></div>
+      <button class="menu-btn" id="btn-back-menu2">← VOLTAR</button>
+    </div>
+
+    <!-- TELA DO JOGO -->
+    <div id="game-screen" class="screen">
+      <canvas id="gameCanvas"></canvas>
+      <!-- HUD -->
+      <div id="hud">
+        <div class="hud-left">
+          <div class="hud-item" id="hud-lives">❤️ <span id="lives-val">3</span></div>
+          <div class="hud-item" id="hud-score">⭐ <span id="score-val">0</span></div>
+          <div class="hud-item" id="hud-rings">💍 <span id="rings-val">0</span></div>
+        </div>
+        <div class="hud-center">
+          <div id="hud-stage-name">Fase 1 - Floresta</div>
+          <div id="hud-timer">⏱ <span id="timer-val">0:00</span></div>
+        </div>
+        <div class="hud-right">
+          <div id="boss-hp-container" class="hidden">
+            <div class="boss-label">BOSS HP</div>
+            <div class="boss-hp-bar"><div id="boss-hp-fill"></div></div>
+          </div>
+        </div>
+      </div>
+      <!-- DASH INDICATOR -->
+      <div id="dash-indicator">
+        <div class="dash-label">DASH</div>
+        <div class="dash-bar"><div id="dash-fill"></div></div>
+      </div>
+      <!-- MESSAGES -->
+      <div id="game-message" class="hidden"></div>
+      <!-- PAUSE -->
+      <div id="pause-overlay" class="hidden">
+        <div class="pause-box">
+          <h2>PAUSADO</h2>
+          <button class="menu-btn" id="btn-resume">▶ CONTINUAR</button>
+          <button class="menu-btn" id="btn-quit">✕ SAIR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="gameover-screen" class="screen">
+      <div class="gameover-content">
+        <div class="gameover-title">GAME OVER</div>
+        <div class="gameover-score">Pontuação: <span id="go-score">0</span></div>
+        <div class="gameover-rings">Anéis: <span id="go-rings">0</span></div>
+        <button class="menu-btn primary" id="btn-retry">↺ TENTAR NOVAMENTE</button>
+        <button class="menu-btn" id="btn-go-menu">⌂ MENU</button>
+      </div>
+    </div>
+
+    <!-- VITÓRIA -->
+    <div id="victory-screen" class="screen">
+      <div class="victory-content">
+        <div class="victory-stars">★★★</div>
+        <div class="victory-title">VOCÊ VENCEU!</div>
+        <div class="victory-subtitle">Todos os bosses foram derrotados!</div>
+        <div class="victory-stats">
+          <div>Pontuação Final: <span id="v-score">0</span></div>
+          <div>Anéis Coletados: <span id="v-rings">0</span></div>
+          <div>Tempo Total: <span id="v-time">0:00</span></div>
+        </div>
+        <button class="menu-btn primary" id="btn-v-menu">⌂ MENU PRINCIPAL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="utils/math.js"></script>
+  <script src="utils/particles.js"></script>
+  <script src="utils/audio.js"></script>
+  <script src="utils/renderer.js"></script>
+  <script src="enemies/enemy.js"></script>
+  <script src="bosses/boss.js"></script>
+  <script src="scenes/levels.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
+
