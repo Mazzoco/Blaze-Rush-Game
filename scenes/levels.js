@@ -105,9 +105,9 @@ const Levels = [
            buildRingLine(300, 250, 5, 35, 0)),
 
     checkpoints: [
-      { x: 1600, y: 520 },
-      { x: 3200, y: 520 },
-      { x: 4800, y: 520 },
+      { x: 1750, y: 520 },  // sobre ground x:1700 w:600
+      { x: 3100, y: 520 },  // sobre ground x:3000 w:700
+      { x: 4600, y: 520 },  // sobre ground x:4400 w:800
     ],
 
     boss: { x: 5900, y: 480, type: 'forest' },
@@ -203,9 +203,9 @@ const Levels = [
            buildRingArc(2150, 340, 5, 80)),
 
     checkpoints: [
-      { x: 1500, y: 660 },
-      { x: 3200, y: 660 },
-      { x: 5000, y: 660 },
+      { x: 1700, y: 660 },  // sobre ground x:1600 w:600
+      { x: 3050, y: 660 },  // sobre ground x:2900 w:600
+      { x: 5100, y: 660 },  // sobre ground x:5000 w:500
     ],
 
     boss: { x: 5900, y: 620, type: 'cave' },
@@ -298,9 +298,9 @@ const Levels = [
            buildRingArc(3600, 240, 5, 80)),
 
     checkpoints: [
-      { x: 1600, y: 520 },
-      { x: 3200, y: 520 },
-      { x: 5000, y: 520 },
+      { x: 1700, y: 520 },  // sobre ground x:1600 w:600
+      { x: 3050, y: 520 },  // sobre ground x:2900 w:600
+      { x: 5100, y: 520 },  // sobre ground x:5000 w:500
     ],
 
     boss: { x: 5900, y: 480, type: 'ice' },
@@ -400,9 +400,9 @@ const Levels = [
            buildRingArc(2200, 240, 5, 80)),
 
     checkpoints: [
-      { x: 1500, y: 440 },
-      { x: 3200, y: 440 },
-      { x: 5000, y: 440 },
+      { x: 1450, y: 440 },  // sobre platform x:1380 y:490 (está sobre o chão)
+      { x: 3050, y: 400 },  // sobre platform x:2990 y:430
+      { x: 4920, y: 400 },  // sobre platform x:4850 y:430
     ],
 
     boss: { x: 5900, y: 460, type: 'lava' },

@@ -71,7 +71,7 @@ class Player {
     this.WALK_SPEED  = 3.5;
     this.RUN_SPEED   = 6.5;
     this.DASH_SPEED  = 13;
-    this.JUMP_FORCE  = -13.5;
+    this.JUMP_FORCE  = -11.5;
     this.DJUMP_FORCE = -11;
     this.GRAVITY     = 0.55;
     this.FRICTION    = 0.82;
@@ -80,18 +80,35 @@ class Player {
   }
 
   jump(isDouble) {
-    if (isDouble) {
-      this.vy = this.DJUMP_FORCE;
-      this.state = 'djump';
-      this.jumpCount = this.maxJumps;
-    } else {
-      this.vy = this.JUMP_FORCE;
-      this.state = 'jump';
-      this.jumpCount = 1;
-    }
-    Audio.sfx.jump();
-    Game.particles.spawnJump(this.x + this.w / 2, this.y + this.h);
+
+  // DOUBLE JUMP
+  if (isDouble) {
+
+    this.vy = this.DJUMP_FORCE;
+    this.state = 'djump';
+
+    // partículas APENAS no segundo pulo
+    Game.particles.spawnImpact(
+      this.x + this.w / 2,
+      this.y + this.h / 2,
+      '#cccccc'
+    );
+
+  } 
+  
+  // PRIMEIRO PULO
+  else {
+
+    this.vy = this.JUMP_FORCE;
+    this.state = 'jump';
+
   }
+
+  // conta os pulos usados
+  this.jumpCount++;
+
+  Audio.sfx.jump();
+}
 
   dash(dir) {
     if (this.dashEnergy < 30 || this.dashCooldown > 0) return;
@@ -99,6 +116,7 @@ class Player {
     this.dashTimer = 15;
     this.dashCooldown = 40;
     this.vx = dir * this.DASH_SPEED;
+    this.vy = 0;          // zero vertical velocity so dash travels in a straight line
     this.dashEnergy -= 30;
     this.state = 'dash';
     Audio.sfx.dash();
@@ -166,20 +184,26 @@ class Player {
     }
     this._dashPrev = dashK;
 
-    // Jump input
-    if (jump && !this._jumpPrev) {
-      if (this.onGround) {
-        this.jumpCount = 0;
-        this.jump(false);
-      } else if (this.jumpCount < this.maxJumps) {
-        this.jump(true);
-      }
-    }
-    this._jumpPrev = jump;
+// Jump input
+if (jump && !this._jumpPrev) {
+  // Primeiro pulo
+  if (this.onGround) {
+    this.jumpCount = 0;
+    this.jump(false);
+  }
+  // Double jump
+  else if (this.jumpCount < this.maxJumps) {
+    this.jump(true);
+  }
+}
+// salva estado anterior do botão
+this._jumpPrev = jump;
 
-    // Gravity
-    this.vy += this.GRAVITY;
-    this.vy = Math.min(this.vy, 20);
+    // Gravity — suppressed during dash so it travels in a straight line
+    if (!this.dashing) {
+      this.vy += this.GRAVITY;
+      this.vy = Math.min(this.vy, 20);
+    }
 
     // Move
     this.x += this.vx;
@@ -189,33 +213,27 @@ class Player {
     if (this.x < 0) { this.x = 0; this.vx = 0; }
     if (this.x + this.w > level.width) { this.x = level.width - this.w; this.vx = 0; }
 
-    // Platform collision
+    // Platform collision — ONE-WAY: player can jump through from below,
+    // only lands when falling downward onto the top surface.
     this.onGround = false;
     this.onIce = false;
     for (const plat of level.platforms) {
       if (!MathUtils.rectOverlap(this.x, this.y, this.w, this.h, plat.x, plat.y, plat.w, plat.h)) continue;
-      const col = MathUtils.rectCollide(this.x, this.y, this.w, this.h, plat.x, plat.y, plat.w, plat.h);
-      if (!col) continue;
-      if (col.axis === 'y') {
-        if (this.vy >= 0 && this.y + this.h - this.vy <= plat.y + 4) {
-          this.y = plat.y - this.h;
-          this.vy = 0;
-          this.onGround = true;
-          if (plat.ice) this.onIce = true;
-          if (this.jumpCount > 0) {
-            // Landing
-            Audio.sfx.land();
-          }
-          this.jumpCount = 0;
-        } else {
-          this.y = plat.y + plat.h;
-          this.vy = Math.abs(this.vy) * 0.3;
-        }
-      } else {
-        if (this.vx > 0) this.x = plat.x - this.w;
-        else             this.x = plat.x + plat.w;
-        this.vx = 0;
+
+      // Only resolve TOP collision (one-way platforms):
+      // player must be moving downward AND the player's feet in the previous
+      // frame were at or above the platform top.
+      const prevFeetY = this.y + this.h - this.vy; // feet Y before this frame's move
+      if (this.vy >= 0 && prevFeetY <= plat.y + 6) {
+        this.y = plat.y - this.h;
+        this.vy = 0;
+        this.onGround = true;
+        if (plat.ice) this.onIce = true;
+        if (this.jumpCount > 0) Audio.sfx.land();
+        this.jumpCount = 0;
       }
+      // Side collisions only against the level left/right world boundary
+      // (skip side push so player can always jump through platforms)
     }
 
     // Update state for animation
@@ -512,19 +530,56 @@ const Game = {
       if (!py.dead && py.invTimer === 0) {
         const overlapBoss = MathUtils.rectOverlap(py.x, py.y, py.w, py.h, this.boss.x, this.boss.y, this.boss.w, this.boss.h);
         if (overlapBoss) {
-          const bottomY = py.y + py.h;
-          const bossTop = this.boss.y + 20;
-          if (py.vy > 0 && bottomY < bossTop + 16) {
-            if (this.boss.takeDamage(this.particles)) {
-              py.vy = -11;
-              py.jumpCount = 0;
-              GameState.score += 500;
-              this.showMessage('+500 BOSS HIT!', 60);
-            }
-          } else {
-            py.takeDamage();
-          }
-        }
+
+  const playerBottom = py.y + py.h;
+  const playerCenter = py.x + py.w / 2;
+
+  const bossTop = this.boss.y;
+  const bossLeft = this.boss.x;
+  const bossRight = this.boss.x + this.boss.w;
+
+  // margem da cabeça do boss
+  const stompZone = bossTop + 28;
+
+  // player está caindo?
+  const falling = py.vy > 0;
+
+  // player está dentro da largura do boss?
+  const insideBossWidth =
+    playerCenter > bossLeft + 10 &&
+    playerCenter < bossRight - 10;
+
+  // ===== STOMP =====
+  if (
+    falling &&
+    playerBottom < stompZone &&
+    insideBossWidth
+  ) {
+
+    if (this.boss.takeDamage(this.particles)) {
+
+      py.vy = -12;
+
+      // permite continuar double jump depois do bounce
+      py.jumpCount = 1;
+
+      GameState.score += 500;
+
+      this.showMessage('+500 BOSS HIT!', 60);
+
+      Audio.sfx.stomp();
+
+    }
+
+  }
+
+  // ===== DANO LATERAL =====
+  else {
+
+    py.takeDamage();
+
+  }
+}
         // Projectile damage
         if (py.invTimer === 0 && this.boss.checkProjectileHit(py.x, py.y, py.w, py.h)) {
           py.takeDamage();

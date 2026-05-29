@@ -11,7 +11,7 @@ class Boss {
     this.h = 80;
     this.vx = 0;
     this.vy = 0;
-    this.maxHp = 8;
+    this.maxHp = 4;
     this.hp = this.maxHp;
     this.alive = true;
     this.frame = 0;
@@ -107,6 +107,19 @@ class Boss {
     this.dir = dx > 0 ? 1 : -1;
 
     this.runPattern(player, particles);
+
+    // ---- Hard arena clamp — boss NEVER leaves its arena ----
+    // Arena is defined as a 700px wide zone centred on startX
+    const arenaLeft  = this.startX - 400;
+    const arenaRight = this.startX + 300;
+    if (this.x < arenaLeft) {
+      this.x  = arenaLeft;
+      this.vx = Math.abs(this.vx); // bounce right
+    }
+    if (this.x + this.w > arenaRight) {
+      this.x  = arenaRight - this.w;
+      this.vx = -Math.abs(this.vx); // bounce left
+    }
   }
 
   runPattern(player, particles) {
@@ -120,29 +133,26 @@ class Boss {
 
   // ---- FOREST BOSS: charge + seeds ----
   patternForest(player, particles) {
-    if (this.phaseTimer < 60) {
+    if (this.phaseTimer < 100) {
       this.vx *= 0.85; // idle
-    } else if (this.phaseTimer < 120) {
+    } else if (this.phaseTimer < 220) {
       // Charge
-      this.vx = this.dir * 5;
+      this.vx = this.dir * 2.5;
     } else if (this.phaseTimer === 120) {
       // Fire seeds
       for (let i = -2; i <= 2; i++) {
         this.projectiles.push({
           x: this.x + this.w / 2, y: this.y + 20,
           vx: i * 1.5 + this.dir * 2, vy: -6,
-          gravity: 0.2, life: 120,
+          gravity: 0.2, life: 160,
           color: '#44aa00', r: 5, damage: true, type: 'seed'
         });
       }
       Audio.sfx.projectile();
-    } else if (this.phaseTimer > 180) {
+    } else if (this.phaseTimer > 360) {
       this.phaseTimer = 0;
       this.vx = 0;
     }
-    // Clamp to arena
-    if (this.x < this.startX - 350) this.dir = 1;
-    if (this.x > this.startX + 100) this.dir = -1;
   }
 
   // ---- CAVE BOSS: rocks + jumps ----
