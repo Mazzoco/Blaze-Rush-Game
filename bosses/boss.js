@@ -132,28 +132,37 @@ class Boss {
   }
 
   // ---- FOREST BOSS: charge + seeds ----
-  patternForest(player, particles) {
-    if (this.phaseTimer < 100) {
-      this.vx *= 0.85; // idle
-    } else if (this.phaseTimer < 220) {
-      // Charge
-      this.vx = this.dir * 2.5;
-    } else if (this.phaseTimer === 120) {
-      // Fire seeds
-      for (let i = -2; i <= 2; i++) {
-        this.projectiles.push({
-          x: this.x + this.w / 2, y: this.y + 20,
-          vx: i * 1.5 + this.dir * 2, vy: -6,
-          gravity: 0.2, life: 160,
-          color: '#44aa00', r: 5, damage: true, type: 'seed'
-        });
-      }
-      Audio.sfx.projectile();
-    } else if (this.phaseTimer > 360) {
-      this.phaseTimer = 0;
-      this.vx = 0;
+patternForest(player, particles) {
+  if (this.phaseTimer < 100) {
+    this.vx *= 0.85; // idle
+
+  } else if (this.phaseTimer === 120) {
+    // Fire seeds
+    for (let i = -2; i <= 2; i++) {
+      this.projectiles.push({
+        x: this.x + this.w / 2,
+        y: this.y + 20,
+        vx: i * 1.5 + this.dir * 2,
+        vy: -6,
+        gravity: 0.2,
+        life: 160,
+        color: '#44aa00',
+        r: 5,
+        damage: true,
+        type: 'seed'
+      });
     }
+    Audio.sfx.projectile();
+
+  } else if (this.phaseTimer < 220) {
+    // Charge
+    this.vx = this.dir * 2.5;
+
+  } else if (this.phaseTimer > 360) {
+    this.phaseTimer = 0;
+    this.vx = 0;
   }
+}
 
   // ---- CAVE BOSS: rocks + jumps ----
   patternCave(player, particles) {
@@ -205,7 +214,7 @@ class Boss {
 
   // ---- LAVA BOSS: fireballs + lava wave ----
   patternLava(player, particles) {
-    if (this.phaseTimer % 60 === 0) {
+    if (this.phaseTimer % 180 === 0) {
       // Fire arc of fireballs
       for (let i = 0; i < 3; i++) {
         const ang = -Math.PI / 2 + (i - 1) * 0.4;
