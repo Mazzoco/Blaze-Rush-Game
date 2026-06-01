@@ -595,7 +595,7 @@ const Ending = (() => {
       { label: 'Herói',       value: 'BLAZE' },
       { label: 'Princesa',    value: 'AURORA' },
       { label: 'Vilão',       value: 'LAVA DEMON' },
-      { label: 'Criado com',  value: 'HTML + JS + ❤️' },
+      { label: 'Jogo criado por',  value: 'Caio' },
     ];
     credits.forEach((c, i) => {
       const y = 380 + i * 34;

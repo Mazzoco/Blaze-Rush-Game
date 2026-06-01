@@ -817,6 +817,27 @@ const Game = {
     GameState.addScore({ level: 4, score: GameState.score });
     this.showScreen('victory-screen');
     Audio.sfx.victory();
+  
+    // ---- Mostra a animação final antes da tela de vitória ----
+    this.showScreen('ending-screen');
+    Audio.stopBGM();
+
+    const endingCanvas = document.getElementById('endingCanvas');
+    endingCanvas.width  = CANVAS_W;
+    endingCanvas.height = CANVAS_H;
+
+    // Toca a animação; quando terminar exibe a tela de vitória normal
+    Ending.start(endingCanvas, () => {
+      const secs = Math.floor(GameState.totalTime / 60);
+      const mins = Math.floor(secs / 60);
+      const s    = secs % 60;
+      document.getElementById('v-score').textContent = GameState.score;
+      document.getElementById('v-rings').textContent = GameState.rings;
+      document.getElementById('v-time').textContent  = `${mins}:${s.toString().padStart(2,'0')}`;
+      GameState.addScore({ level: 4, score: GameState.score });
+      this.showScreen('victory-screen');
+      Audio.sfx.victory();
+    });
   }
 };
 
